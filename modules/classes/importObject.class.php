@@ -54,9 +54,11 @@ class ImportObject
     "container_identifier",
     "container_type_id",
     "container_status_id",
+    "container_comment",
     "sample_location",
     "sample_column",
     "sample_line",
+    "sample_comment",
     "container_parent_uid",
     "container_location",
     "container_column",
@@ -72,6 +74,7 @@ class ImportObject
     "sample_type_name",
     "sample_status_name",
     "campaign_name",
+    "campaign_uuid",
     "referent_name",
     "sampling_place_name",
     "sample_parent_identifier",
@@ -133,6 +136,7 @@ class ImportObject
   private $md_columns = array();
 
   public $minuid, $maxuid;
+  public $onlyCollectionSearch = 1;
 
   /**
    * Initialise la lecture du fichier, et lit la ligne d'entete
@@ -301,7 +305,7 @@ class ImportObject
         "container_column",
         "container_line"
       ) as $field) {
-        if (!strlen($values[$field]) > 0) {
+        if (empty($values[$field])) {
           $values[$field] = 1;
         }
       }
@@ -309,7 +313,7 @@ class ImportObject
        * Traitement de l'echantillon
        */
       $sample_uid = 0;
-      if (strlen($values["sample_identifier"]) > 0) {
+      if (!empty($values["sample_identifier"])) {
         $dataSample = $values;
         $dataSample["sample_creation_date"] = $date;
         $dataSample["identifier"] = $values["sample_identifier"];
@@ -328,6 +332,9 @@ class ImportObject
         if (!empty($values["country_origin_code"])) {
           $dataSample["country_origin_id"] = $this->country->getIdFromCode($values["country_origin_code"]);
         }
+        if (!empty($values["sample_comment"])) {
+          $dataSample["object_comment"] = $values["sample_comment"];
+        }
         /**
          * Traitement des dates - mise au format de base de donnees avant importation
          */
@@ -336,14 +343,14 @@ class ImportObject
           "expiration_date"
         );
         foreach ($fieldDates as $fieldDate) {
-          if (strlen($values[$fieldDate]) > 0) {
+          if (!empty($values[$fieldDate])) {
             $dataSample[$fieldDate] = $this->formatDate($values[$fieldDate]);
           }
         }
         /**
          * Metadata preparation
          */
-        if (strlen($values["sample_metadata_json"]) > 0) {
+        if (!empty($values["sample_metadata_json"])) {
           $md_array = json_decode($values["sample_metadata_json"], true);
           if (json_last_error() != JSON_ERROR_NONE) {
             throw new ImportObjectException(sprintf(_("Ligne %s : le décodage du champ JSON sample_metadata_json n'a pas abouti"), $num));
@@ -352,7 +359,7 @@ class ImportObject
           $md_array = array();
         }
         foreach ($this->md_columns as $md_col) {
-          if (strlen($values[$md_col]) > 0) {
+          if (!empty($values[$md_col])) {
             $colname = substr($md_col, 3);
             if (!array_key_exists($colname, $md_array)) {
               if (in_array(substr($values[$md_col], 0, 1), $jsonFirstCharArray)) {
@@ -414,17 +421,23 @@ class ImportObject
        */
       if (empty($values["container_parent_uid"]) && !empty($values["container_parent_identifier"])) {
         $values["container_parent_uid"] = $this->container->getUidFromIdentifier($values["container_parent_identifier"]);
+        if (empty($values["container_parent_uid"])) {
+          throw new ImportObjectException("Line $num : the container " . $values["container_parent_identifier"] . " don't exists into the database");
+        }
       }
       /**
        * Traitement du contenant
        */
       $container_uid = 0;
-      if (strlen($values["container_identifier"]) > 0) {
+      if (!empty($values["container_identifier"])) {
         $dataContainer = $values;
         $dataContainer["identifier"] = $values["container_identifier"];
         $dataContainer["object_status_id"] = $values["container_status_id"];
         if (!$dataContainer["object_status_id"] > 0) {
           $dataContainer["object_status_id"] = 1;
+        }
+        if (!empty($values["container_comment"])) {
+          $dataContainer["object_comment"] = $values["container_comment"];
         }
         $dataContainer["uuid"] = $values["container_uuid"];
         try {
@@ -457,7 +470,7 @@ class ImportObject
         /**
          * Traitement du rattachement du container
          */
-        if (strlen($values["container_parent_uid"]) > 0) {
+        if (!empty($values["container_parent_uid"])) {
           try {
             $this->movement->addMovement($container_uid, $date, 1, $values["container_parent_uid"], $_SESSION["login"], $values["container_location"], null, null, $values["container_column"], $values["container_line"]);
           } catch (Exception $e) {
@@ -560,17 +573,7 @@ class ImportObject
     for ($i = 0; $i < $nb; $i++) {
       $values[$this->fileColumn[$i]] = $data[$i];
     }
-    /**
-     * Recherche de la valeur de l'id du sample_parent
-     */
-    if ($values["sample_parent_uid"] > 0) {
-      $dp = $this->sample->lire($values["sample_parent_uid"]);
-      $values["parent_sample_id"] = $dp["sample_id"];
-    } else {
-      if (!empty($values["sample_parent_identifier"])) {
-        $values["parent_sample_id"] = $this->sample->getIdFromIdentifier($values["sample_parent_identifier"]);
-      }
-    }
+
     /**
      * Search for the code of the country
      */
@@ -589,6 +592,21 @@ class ImportObject
         if ($values["collection_name"] == $value["collection_name"]) {
           $values["collection_id"] = $value["collection_id"];
           break;
+        }
+      }
+    }
+    /**
+     * Recherche de la valeur de l'id du sample_parent
+     */
+    if ($values["sample_parent_uid"] > 0) {
+      $dp = $this->sample->lire($values["sample_parent_uid"]);
+      $values["parent_sample_id"] = $dp["sample_id"];
+    } else {
+      if (!empty($values["sample_parent_identifier"])) {
+        if ($this->onlyCollectionSearch == 1) {
+          $values["parent_sample_id"] = $this->sample->getIdFromIdentifier($values["sample_parent_identifier"], $values["collection_id"]);
+        } else {
+        $values["parent_sample_id"] = $this->sample->getIdFromIdentifier($values["sample_parent_identifier"]);
         }
       }
     }
@@ -613,7 +631,7 @@ class ImportObject
     if (!empty($values["campaign_name"])) {
       $values["campaign_id"] = -1;
       foreach ($this->campaign as $value) {
-        if ($values["campaign_name"] == $value["campaign_name"]) {
+        if ($values["campaign_name"] == $value["campaign_name"] || $values["campaign_uuid"] == $value["uuid"]) {
           $values["campaign_id"] = $value["campaign_id"];
           break;
         }

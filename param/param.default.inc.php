@@ -7,9 +7,9 @@
  * Parametres par defaut de l'application
  * Si des modifications doivent etre apportees, faites-les dans le fichier param.inc.php
  */
-$APPLI_version = "2.6.1";
-$APPLI_dbversion = "2.6";
-$APPLI_versiondate = _("11/02/2022");
+$APPLI_version = "2.7.0";
+$APPLI_dbversion = "2.7";
+$APPLI_versiondate = _("20/06/2022");
 $language = "fr";
 $DEFAULT_formatdate = "fr";
 /*
@@ -78,7 +78,10 @@ $LDAP = array(
 	'attributgroupname' => "cn",
 	'attributloginname' => "memberuid",
 	'basedngroup' => 'ou=example,o=societe,c=fr',
-	"timeout" => 2
+	"timeout" => 2,
+	"ldapnoanonymous" => false,
+	"ldaplogin" => "",
+	"ldappassword" => ""
 );
 
 /*
@@ -113,7 +116,7 @@ $APPLI_utf8 = true;
 $APPLI_menufile = "param/menu.xml";
 $APPLI_temp = "temp";
 $APPLI_titre = "Collec-Science";
-$APPLI_assist_address = "https://github.com/Irstea/collec/issues/new";
+$APPLI_assist_address = "https://github.com/collec-science/collec-science/issues/new";
 $APPLI_isFullDns = false;
 /*
  * Impression directe vers une imprimante a etiquettes
@@ -207,3 +210,4 @@ $APPLI_max_file_size = 10; // Size in Mb
 $APPLI_passwordMinLength = 12;
 $APPLI_hour_duration = 3600; // Duration of an hour for count all calls to a module
 $APPLI_day_duration = 36000; //Duration of a day for count all calls to a module
+$APPLI_external_document_path = "/dev/null";

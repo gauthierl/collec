@@ -6,6 +6,7 @@
  * Encoding : UTF-8
  * Copyright 2016 - All rights reserved
  */
+
 class Collection extends ObjetBDD
 {
 
@@ -51,7 +52,10 @@ class Collection extends ObjetBDD
       ),
       "license_id" => array(
         "type" => 1
-      )
+      ),
+      "no_localization" => array("type" => 1),
+      "external_storage_enabled" => array("type" => 1),
+      "external_storage_root" => array("type" => 0)
     );
     parent::__construct($bdd, $param);
   }
@@ -70,7 +74,8 @@ class Collection extends ObjetBDD
                 referent_name,
                 allowed_import_flow, allowed_export_flow, public_collection
                 ,collection_keywords,collection_displayname
-                ,license_id, license_name, license_url
+                ,license_id, license_name, license_url, no_localization
+                ,external_storage_enabled, external_storage_root
 				from collection
                 left outer join collection_group using (collection_id)
                 left outer join referent using (referent_id)
@@ -88,7 +93,11 @@ class Collection extends ObjetBDD
    */
   function getCollectionsFromLogin()
   {
-    return $this->getCollectionsFromGroups($_SESSION["groupes"]);
+    if (is_array($_SESSION["groupes"])) {
+      return $this->getCollectionsFromGroups($_SESSION["groupes"]);
+    } else {
+      return array();
+    }
   }
 
   /**
@@ -98,12 +107,13 @@ class Collection extends ObjetBDD
    *
    * @return array
    */
-  function getCollectionsFromGroups(array $groups)
+  function getCollectionsFromGroups(array $groups): array
   {
+    $data = array();
     if (count($groups) > 0) {
-      /*
-             * Preparation de la clause in
-             */
+      /**
+       * Preparation de la clause in
+       */
       $comma = false;
       $in = "(";
       foreach ($groups as $value) {
@@ -115,15 +125,18 @@ class Collection extends ObjetBDD
       $in .= ")";
       $sql = "select distinct collection_id, collection_name
           ,allowed_import_flow, allowed_export_flow, public_collection
+          ,external_storage_enabled, external_storage_root
 					from collection
 					join collection_group using (collection_id)
 					join aclgroup using (aclgroup_id)
 					where groupe in $in";
       $order = " order by collection_name";
-      return $this->getListeParam($sql . $order);
-    } else {
-      return array();
+      $dataSql = $this->getListeParam($sql . $order);
+      foreach ($dataSql as $row) {
+        $data[$row["collection_id"]] = $row;
+      }
     }
+    return $data;
   }
 
   /**
@@ -135,6 +148,12 @@ class Collection extends ObjetBDD
    */
   function ecrire($data)
   {
+    /**
+     * Verify the external document path
+     */
+    if (strpos($data["external_storage_root"], "..")) {
+      throw new ObjetBDDException(_("La racine des documents externes ne peut pas contenir .."));
+    }
     $id = parent::ecrire($data);
     if ($id > 0) {
       /*
@@ -282,5 +301,31 @@ class Collection extends ObjetBDD
   {
     $sql = "delete from collection_group where aclgroup_id = :group_id";
     $this->executeAsPrepared($sql, array("group_id" => $group_id));
+  }
+/**
+ * Get all collections, the attributed first
+ *
+ * @return array|null
+ */
+  function getAllCollections() :?array {
+    $collections = $_SESSION["collections"];
+    /**
+     * Get the others collections
+     */
+    $in = " where collection_id not in (";
+    $comma = false;
+    foreach ($collections as $collection) {
+      $comma ? $in .= "," : $comma = true;
+      $in .= $collection["collection_id"];
+    }
+    $in .= ")";
+    $sql = "select collection_id, collection_name from collection";
+    if ($comma) {
+      $sql .= $in;
+    }
+    $sql .= " order by collection_name";
+    $newCollections = $this->getListeParam($sql);
+    return array_merge($collections, $newCollections);
+
   }
 }

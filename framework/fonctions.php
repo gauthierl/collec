@@ -86,6 +86,8 @@ function dataWrite($dataClass, $data, $isPartOfTransaction = false)
   } catch (PDOException | ObjetBDDException $e) {
     if (strpos($e->getMessage(), "nique violation") !== false) {
       $message->set(_("Un enregistrement portant déjà ce nom existe déjà dans la base de données."), true);
+    } else {
+      $message->set($e->getMessage(), true);
     }
     if ($OBJETBDD_debugmode > 0) {
       foreach ($dataClass->getErrorData(1) as $messageError) {
@@ -132,8 +134,11 @@ function dataDelete($dataClass, $id, $isPartOfTransaction = false)
         $module_coderetour = 1;
       }
       $log->setLog($_SESSION["login"], get_class($dataClass) . "-delete", $id);
-    } catch (PDOException | ObjetBDDException $e) {
-
+    }
+    catch (ObjetBDDException $eo) {
+      $message->set($eo->getMessage(), true);
+    }
+    catch (PDOException $e) {
       foreach ($dataClass->getErrorData(1) as $messageError) {
         $message->setSyslog($messageError);
       }

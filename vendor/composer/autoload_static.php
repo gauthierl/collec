@@ -7,8 +7,6 @@ namespace Composer\Autoload;
 class ComposerStaticInitfc06e24141f3a87f90d0d3c71e70b08b
 {
     public static $files = array (
-        'a4ecaeafb8cfb009ad0e052c90355e98' => __DIR__ . '/..' . '/beberlei/assert/lib/Assert/functions.php',
-        '320cde22f66dd4f5d3fd621d3e88b98f' => __DIR__ . '/..' . '/symfony/polyfill-ctype/bootstrap.php',
         '51fcf4e06c07cc00c920b44bcd900e7a' => __DIR__ . '/..' . '/thecodingmachine/safe/deprecated/apc.php',
         '47f619d9197b36cf5ab70738d7743fe2' => __DIR__ . '/..' . '/thecodingmachine/safe/deprecated/libevent.php',
         'ea6bb8a12ef9b68f6ada99058e530760' => __DIR__ . '/..' . '/thecodingmachine/safe/deprecated/mssql.php',
@@ -122,6 +120,7 @@ class ComposerStaticInitfc06e24141f3a87f90d0d3c71e70b08b
         'P' => 
         array (
             'Psr\\Log\\' => 8,
+            'Picqer\\Barcode\\' => 15,
             'ParagonIE\\ConstantTime\\' => 23,
         ),
         'O' => 
@@ -156,6 +155,10 @@ class ComposerStaticInitfc06e24141f3a87f90d0d3c71e70b08b
         'Psr\\Log\\' => 
         array (
             0 => __DIR__ . '/..' . '/psr/log/Psr/Log',
+        ),
+        'Picqer\\Barcode\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/picqer/php-barcode-generator/src',
         ),
         'ParagonIE\\ConstantTime\\' => 
         array (

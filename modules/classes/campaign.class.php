@@ -2,7 +2,7 @@
 class Campaign extends ObjetBDD
 {
     private $sql = "select campaign_id, campaign_name, campaign_from, campaign_to,
-                    referent_id, referent_name
+                    referent_id, referent_name, uuid
                     from campaign
                     left outer join referent using (referent_id)";
     private $document;
@@ -30,7 +30,8 @@ class Campaign extends ObjetBDD
                 "requis" => 1
             ),
             "campaign_from" => array("type" => 2),
-            "campaign_to" => array("type" => 2)
+            "campaign_to" => array("type" => 2),
+            "uuid" => array("type" => 0, "default" => "getUUID")
         );
         parent::__construct($bdd, $param);
     }
@@ -93,10 +94,33 @@ class Campaign extends ObjetBDD
      * @param string $name
      * @return integer|null
      */
-    function getIdFromName(string $name):?int{
-        $sql = "select campaign_id from campaign where campaign_name = :name";
-        $data = $this->lireParamAsPrepared($sql, array("name"=>$name));
-        if (!empty($data)){
+    function getIdFromName(string $name): ?int
+    {
+        return $this->getId("campaign_name", $name);
+    }
+    /**
+     * Get the id from uuid of t he campaign
+     *
+     * @param string $uuid
+     * @return integer|null
+     */
+    function getIdFromUuid(string $uuid): ?int
+    {
+        return $this->getId("uuid", $uuid);
+    }
+
+    /**
+     * Generic function for getting the id
+     *
+     * @param string $field
+     * @param string $val
+     * @return integer|null
+     */
+    function getId(string $field, string $val): ?int
+    {
+        $sql = "select campaign_id from campaign where $field = :name";
+        $data = $this->lireParamAsPrepared($sql, array("name" => $$val));
+        if (!empty($data)) {
             return $data["campaign_id"];
         } else {
             return NULL;

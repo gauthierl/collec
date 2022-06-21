@@ -117,7 +117,8 @@
  *
  */
 class DocumentException extends Exception
-{ }
+{
+}
 
 class MimeType extends ObjetBDD
 {
@@ -125,10 +126,10 @@ class MimeType extends ObjetBDD
   /**
    * Constructeur de la classe
    *
-   * @param Adodb_instance $bdd
+   * @param PDO $bdd
    * @param array $param
    */
-  function __construct($bdd, $param = null)
+  function __construct($bdd, $param = array())
   {
     $this->table = "mime_type";
     $this->colonnes = array(
@@ -200,12 +201,13 @@ class Document extends ObjetBDD
 {
 
   public $temp = "temp";
+  public Mimetype $mimeType;
 
   // Chemin de stockage des images générées à la volée
   /**
    * Constructeur de la classe
    *
-   * @param Adodb_instance $bdd
+   * @param PDO $bdd
    * @param array $param
    */
   function __construct($bdd, $param = null)
@@ -257,7 +259,9 @@ class Document extends ObjetBDD
         "type" => 2,
         "defaultValue" => "getDateJour"
       ),
-      "uuid" => array("type" => 0, "default" => "getUUID")
+      "uuid" => array("type" => 0, "default" => "getUUID"),
+      "external_storage" => array("type" => 1),
+      "external_storage_path" => array("type" => 0)
     );
     parent::__construct($bdd, $param);
   }
@@ -268,16 +272,31 @@ class Document extends ObjetBDD
    * @param int $id: key of the parent
    * @return array
    */
-  function getListFromField($fieldName, $id)
+  function getListFromField($fieldName, $id/*, $isExternal = false*/)
   {
     $fields = array("uid", "campaign_id", "uuid");
     if (in_array($fieldName, $fields)) {
+      //$isExternal ? $external = "true" : $external = "false";
       $sql = "select document_id, uid, campaign_id, mime_type_id,
           document_import_date, document_name, document_description, size, document_creation_date, uuid
+          ,external_storage, external_storage_path
           from document
           where $fieldName = :id";
+      //and external_storage = $external";
       return $this->getListeParamAsPrepared($sql, array("id" => $id));
     }
+  }
+  /**
+   * Get the max Upload size of a document, in Mb
+   *
+   * @return integer
+   */
+  function getMaxUploadSize(): int
+  {
+    $max_upload = (int)(ini_get('upload_max_filesize'));
+    $max_post = (int)(ini_get('post_max_size'));
+    $memory_limit = (int)(ini_get('memory_limit'));
+    return (min($max_upload, $max_post, $memory_limit));
   }
 
   /**
@@ -289,13 +308,13 @@ class Document extends ObjetBDD
    *            string description : description du contenu du document
    * @return int
    */
-  function ecrire($file, $parentKeyName, $parentKeyValue, $description = NULL, $document_creation_date = NULL)
+  function documentWrite($file, $parentKeyName, $parentKeyValue, $description = NULL, $document_creation_date = NULL)
   {
     if ($file["error"] == 0 && $file["size"] > 0 && is_numeric($parentKeyValue) && $parentKeyValue > 0) {
       global $log, $message;
-      /*
-             * Recuperation de l'extension
-             */
+      /**
+       * Recuperation de l'extension
+       */
       $extension = $this->encodeData(substr($file["name"], strrpos($file["name"], ".") + 1));
       $mimeType = new MimeType($this->connection, $this->paramori);
       $mime_type_id = $mimeType->getTypeMime($extension);
@@ -311,9 +330,9 @@ class Document extends ObjetBDD
           $data["document_creation_date"] = $document_creation_date;
         }
         $dataDoc = array();
-        /*
-                 * Recherche antivirale
-                 */
+        /**
+         * Recherche antivirale
+         */
         $virus = false;
         try {
           testScan($file["tmp_name"]);
@@ -343,13 +362,13 @@ class Document extends ObjetBDD
             $image->setformat("png");
             $dataDoc["thumbnail"] = pg_escape_bytea($image->getimageblob());
           }
-          /*
-                     * suppression du stockage temporaire
-                     */
+          /**
+           *  suppression du stockage temporaire
+           */
           unset($file["tmp_name"]);
-          /*
-                     * Ecriture dans la base de données
-                     */
+          /**
+           * Ecriture dans la base de données
+           */
           $id = parent::ecrire($data);
           if ($id > 0) {
             $sql = "update " . $this->table . " set data = '" . $dataDoc["data"] . "', thumbnail = '" . $dataDoc["thumbnail"] . "' where document_id = " . $id;
@@ -367,11 +386,12 @@ class Document extends ObjetBDD
    * @param int $id
    * @return array
    */
-  function getData($id)
+  function getData(int $id)
   {
-    if ($id > 0 && is_numeric($id)) {
+    if ($id > 0) {
       $sql = "select document_id, document_name, content_type, mime_type_id, extension,
 					document_import_date, document_creation_date, uuid
+          ,external_storage, external_storage_path
 				from document
 				join mime_type using (mime_type_id)
 				where document_id = :document_id";
@@ -505,7 +525,7 @@ class Document extends ObjetBDD
               $image = new Imagick();
               $image->readImageFile($docRef);
               if ($redim) {
-                /** 
+                /**
                  *  Redimensionnement de l'image
                  */
                 $resize = 0;
@@ -598,6 +618,7 @@ class Document extends ObjetBDD
     $sql = "SELECT d.document_id, d.uid, d.uuid as document_uuid, d.uuid,
             document_name, identifier, content_type, extension, size, document_creation_date
             ,o.uuid as sample_uuid
+            ,external_storage_path, external_storage
             FROM col.document d
             join object o using (uid)
             join mime_type using (mime_type_id)
@@ -613,19 +634,80 @@ class Document extends ObjetBDD
     $sql .= " ORDER BY d.uid";
     return $this->getListeParam($sql);
   }
-/**
- * Get some informations from a document
- *
- * @param string $uuid
- * @return array|null
- */
-  function getDetailFromUuid(string $uuid): ?array
+  /**
+   * Get some informations from a document
+   *
+   * @param string $key
+   * @return array|null
+   */
+  function getDetail(string $key, $field = "document_id"): ?array
   {
-    $sql = "SELECT document_id, d.uuid, content_type, size, collection_id, document_name
+    if (in_array($field, array("uuid", "uid", "campaign_id", "document_id"))) {
+      $sql = "SELECT document_id, d.uuid, content_type, size, collection_id, document_name
+            ,external_storage, external_storage_path
             from document d
-            join mime_type using (mime_type_id)
+            left outer join mime_type using (mime_type_id)
             left outer join sample using (uid)
-            where d.uuid = :uuid";
-    return $this->lireParamAsPrepared($sql, array("uuid" => $uuid));
+            where d.$field = :key";
+      return $this->lireParamAsPrepared($sql, array("key" => $key));
+    } else {
+      return array();
+    }
+  }
+
+
+  /**
+   * Write the record for a file stored out of the database
+   *
+   * @param integer $collection_id
+   * @param array $data
+   * @return integer|null
+   */
+  function writeExternal(int $collection_id, array $data): ?int
+  {
+    /**
+     * Verify the collection
+     */
+    $retour = null;
+    $collection = $_SESSION["collections"][$collection_id];
+    if ($collection["external_storage_enabled"]) {
+      global $APPLI_external_document_path;
+      $path = $APPLI_external_document_path . "/" . $collection["external_storage_root"] . "/" . $data["external_storage_path"];
+      /**
+       * Search for the file to associate
+       */
+      if (file_exists($path)) {
+        if (!$data["size"] = filesize($path)) {
+          throw new DocumentException(_("Le fichier ne peut pas être lu"));
+        }
+      }
+      if (empty($data["document_import_date"])) {
+        $data["document_import_date"] = date($_SESSION["MASKDATELONG"]);
+      }
+      /**
+       * get the mimetype
+       */
+      if (!isset($this->mimeType)) {
+        $this->mimeType = new MimeType($this->connection);
+      }
+      $pathinfo = pathinfo($path);
+      $data["mime_type_id"] = $this->mimeType->getTypeMime($pathinfo["extension"]);
+      if (empty($data["document_name"])) {
+        $data["document_name"] = $pathinfo["filename"];
+      }
+      $data["external_storage"] = 1;
+      /**
+       * Verify if the file is not recorded
+       */
+      $sql = "select document_id from document where uid = :uid and external_storage_path = :esp";
+      $verif = $this->lireParamAsPrepared($sql, array("uid" => $data["uid"], "esp" => $data["external_storage_path"]));
+      if ($verif["document_id"] > 0) {
+        $data["document_id"] = $verif["document_id"];
+      }
+      $retour = parent::ecrire($data);
+    } else {
+      throw new DocumentException(_("La collection n'est pas paramétrée pour accepter des fichiers externes"));
+    }
+    return $retour;
   }
 }

@@ -1,17 +1,18 @@
 COLLEC-SCIENCE
-© IRSTEA, 2016-2019 - All rights reserved
+© INRAE, 2016-2022 - All rights reserved
 Published under AGPL license
 
-For install a new instance in a dedicated server:
-wget https://github.com/Irstea/collec/raw/master/install/deploy_new_instance.sh
+**WARNING**: Collec-Science is now hosted here: [https://github.com/collec-science/collec-science](https://github.com/collec-science/collec-science)
+
+For install a new instance in Ubuntu or Debian server:
+~~~
+wget https://github.com/collec-science/collec-science/raw/master/install/deploy_new_instance.sh
 sudo -s
 ./deploy_new_instance.sh
-
-For upgrade to release 2.2.3, see the file:
-https://github.com/Irstea/collec/raw/master/install/upgrade_to_2.2.3.txt
+~~~
 
 GENERAL INSTALLATION AND CONFIGURATION DOCUMENTATION (in french):
-https://github.com/Irstea/collec/raw/master/database/documentation/collec_installation_configuration.pdf
+[https://github.com/collec-science/collec-science/raw/master/documentation/technical/installation_fr/collec_installation_configuration.pdf](https://github.com/collec-science/collec-science/raw/master/documentation/technical/installation_fr/collec_installation_configuration.pdf)
 
 
 
@@ -19,7 +20,7 @@ COLLEC-SCIENCE
 ============
 Collec-science est un logiciel destiné à gérer les collections d'échantillons prélevés sur le terrain.
 
-Écrit en PHP, il fonctionne avec une base de données Postgresql. Il est bâti autour de la notion d'objets, qui sont identifiés par un numéro unique. Un objet peut être de deux types : soit un container (aussi bien un site, un bâtiment, une pièce, un congélateur, une caisse...) qu'un échantillon. 
+Écrit en PHP, il fonctionne avec une base de données Postgresql. Il est bâti autour de la notion d'objets, qui sont identifiés par un numéro unique. Un objet peut être de deux types : soit un container (aussi bien un site, un bâtiment, une pièce, un congélateur, une caisse...) qu'un échantillon.
 Un type d'échantillon peut être rattaché à un type de container, quand les deux notions se superposent (le flacon contenant le résultat d'une pêche est à la fois un container et l'échantillon lui-même).
 Un objet peut se voir attacher plusieurs identifiants métiers différents, des événements, ou des réservations.
 Un échantillon peut être subdivisé en d'autres échantillons (du même type ou non). Il peut contenir plusieurs éléments identiques (notion de sous-échantillonnage), comme des écailles de poisson indifférenciées.
@@ -75,17 +76,3 @@ Software diffused under AGPL License
 Copyright
 ---------
 La version 1.0 a été déposée auprès de l'Agence de Protection des Programmes sous le numéro IDDN.FR.001.470013.000.S.C.2016.000.31500
-
-Installation
-============
-
-To install a new instance in a dedicated server:
-wget https://github.com/Irstea/collec/raw/master/install/deploy_new_instance.sh
-sudo -s
-./deploy_new_instance.sh
-
-To upgrade to release 2.2.3, see the file:
-https://github.com/Irstea/collec/raw/master/install/upgrade_to_2.2.3.txt
-
-GENERAL INSTALLATION AND CONFIGURATION DOCUMENTATION (in french):
-https://github.com/Irstea/collec/raw/master/database/documentation/collec_installation_configuration.pdf

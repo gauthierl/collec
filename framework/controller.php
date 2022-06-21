@@ -234,10 +234,11 @@ try {
           $vue = new VueSmarty($SMARTY_param, $SMARTY_variables);
       }
     }
+
     /**
      * Verification si le login est requis
      */
-    if (!empty($_REQUEST["login"]) || (!empty($t_module["droits"]) || $t_module["loginrequis"] == 1) && !$_SESSION["is_authenticated"]) {
+    if ((!empty($_REQUEST["login"]) || !empty($t_module["droits"]) || $t_module["loginrequis"] == 1) && !$_SESSION["is_authenticated"]) {
       /**
        * Affichage de l'ecran de saisie du login si necessaire
        */
@@ -404,9 +405,7 @@ try {
              */
             $cookieParam = session_get_cookie_params();
             $cookieParam["lifetime"] = $tokenIdentityValidity;
-            if (!$APPLI_modeDeveloppement) {
-              $cookieParam["secure"] = true;
-            }
+            $cookieParam["secure"] = true;
             $cookieParam["httponly"] = true;
             setcookie('tokenIdentity', $token, time() + $tokenIdentityValidity, $cookieParam["path"], $cookieParam["domain"], $cookieParam["secure"], $cookieParam["httponly"]);
           } catch (Exception $e) {

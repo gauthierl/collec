@@ -77,7 +77,9 @@
     	    })
     	    .done (function (value) {
 				value = JSON.parse(value);
-				var newval = value.referent_firstname + " " + value.referent_name + "<br>" + value.referent_email + "<br>" +
+				var newval = value.referent_firstname + " " + value.referent_name + "<br>" +
+						value.referent_organization + "<br>" +
+						value.referent_email + "<br>" +
 						value.referent_phone + "<br>" + value.address_name + "<br>"
 						+ value.address_line2 + "<br>" + value.address_line3 + "<br>"
 						+ value.address_city + "<br>" + value.address_country;
@@ -147,7 +149,7 @@
 	});
 </script>
 <div class="row">
-		<div class="col-md-12">
+		<div class="col-md-8">
 			<a href="index.php?module={$moduleListe}">
 				<img src="display/images/list.png" height="25">
 				{t}Retour à la liste{/t}
@@ -158,8 +160,7 @@
 			{t}Accès rapide{/t}
 			</a>
 			{if $droits.gestion == 1}
-				&nbsp;
-				<a href="index.php?module=sampleChange&uid=0">
+			<a href="index.php?module=sampleChange&uid=0">
 					<img src="display/images/new.png" height="25">
 					{t}Nouvel échantillon{/t}
 				</a>
@@ -193,6 +194,16 @@
 			<a href="index.php?module=sampleDisplay&uid={$data.uid}">
 				<img src="display/images/refresh.png" title="{t}Rafraîchir la page{/t}" height="15">
 			</a>
+		</div>
+		<div class="col-md-4">
+			<div class="pull-right bg-info">
+				{if $droits.gestion == 1}
+					<a href="index.php?module=sampleChange&uid=0">
+							<img src="display/images/new.png" height="25">
+							{t}Nouvel échantillon{/t}
+						</a>
+				{/if}
+			</div>
 		</div>
 	</div>
 <div class="row">
@@ -407,44 +418,46 @@
 						</dd>
 					</dl>
 				{/if}
-				{if $data.campaign_id > 0}
-					<dl class="dl-horizontal">
-						<dt>{t}Campagne de prélèvement :{/t}</dt>
-						<dd><a href="index.php?module=campaignDisplay&campaign_id={$data.campaign_id}">{$data.campaign_name}</a></dd>
-					</dl>
-				{/if}
-				{if $data.sampling_place_id > 0}
-					<dl class="dl-horizontal">
-						<dt class="lexical" data-lexical="sampling_place">{t}Lieu de prélèvement :{/t}</dt>
-						<dd>{$data.sampling_place_name}</dd>
-					</dl>
-				{/if}
-				{if $data.country_id > 0}
-					<dl class="dl-horizontal">
-						<dt class="lexical" data-lexical="country">{t}Pays de collecte :{/t}</dt>
-						<dd>{$data.country_name}</dd>
-					</dl>
-				{/if}
-				{if $data.country_origin_id > 0}
-					<dl class="dl-horizontal">
-						<dt class="lexical" data-lexical="country_origin">{t}Pays de provenance :{/t}</dt>
-						<dd>{$data.country_origin_name}</dd>
-					</dl>
-				{/if}
-				{if strlen($data.wgs84_x) > 0 || strlen($data.wgs84_y) > 0}
-					<dl class="dl-horizontal">
-						<dt class="lexical" data-lexical="sample_latlong">{t}Latitude :{/t}</dt>
-						<dd>{$data.wgs84_y}</dd>
-					</dl>
-					<dl class="dl-horizontal">
-						<dt>{t}Longitude :{/t}</dt>
-						<dd>{$data.wgs84_x}</dd>
-					</dl>
-					{if $data.location_accuracy > 0}
+				{if $data.no_localization == 0}
+					{if $data.campaign_id > 0}
 						<dl class="dl-horizontal">
-							<dt class="lexical" data-lexical="accuracy">{t}Précision de la localisation (en mètres) :{/t}</dt>
-							<dd>{$data.location_accuracy}</dd>
+							<dt>{t}Campagne de prélèvement :{/t}</dt>
+							<dd><a href="index.php?module=campaignDisplay&campaign_id={$data.campaign_id}">{$data.campaign_name}</a></dd>
 						</dl>
+					{/if}
+					{if $data.sampling_place_id > 0}
+						<dl class="dl-horizontal">
+							<dt class="lexical" data-lexical="sampling_place">{t}Lieu de prélèvement :{/t}</dt>
+							<dd>{$data.sampling_place_name}</dd>
+						</dl>
+					{/if}
+					{if $data.country_id > 0}
+						<dl class="dl-horizontal">
+							<dt class="lexical" data-lexical="country">{t}Pays de collecte :{/t}</dt>
+							<dd>{$data.country_name}</dd>
+						</dl>
+					{/if}
+					{if $data.country_origin_id > 0}
+						<dl class="dl-horizontal">
+							<dt class="lexical" data-lexical="country_origin">{t}Pays de provenance :{/t}</dt>
+							<dd>{$data.country_origin_name}</dd>
+						</dl>
+					{/if}
+					{if strlen($data.wgs84_x) > 0 || strlen($data.wgs84_y) > 0}
+						<dl class="dl-horizontal">
+							<dt class="lexical" data-lexical="sample_latlong">{t}Latitude :{/t}</dt>
+							<dd>{$data.wgs84_y}</dd>
+						</dl>
+						<dl class="dl-horizontal">
+							<dt>{t}Longitude :{/t}</dt>
+							<dd>{$data.wgs84_x}</dd>
+						</dl>
+						{if $data.location_accuracy > 0}
+							<dl class="dl-horizontal">
+								<dt class="lexical" data-lexical="accuracy">{t}Précision de la localisation (en mètres) :{/t}</dt>
+								<dd>{$data.location_accuracy}</dd>
+							</dl>
+						{/if}
 					{/if}
 				{/if}
 				<dl class="dl-horizontal">
@@ -502,7 +515,7 @@
 					</fieldset>
 				{/if}
 			</div>
-			{if strlen($data.wgs84_x) > 0 && strlen($data.wgs84_y) > 0}
+			{if strlen($data.wgs84_x) > 0 && strlen($data.wgs84_y) > 0 && $data.no_localization != 1}
 				<div class="col-md-6">
 					{include file="gestion/objectMapDisplay.tpl"}
 				</div>
@@ -545,6 +558,9 @@
 		<div class="tab-pane fade" id="nav-document" role="tabpanel" aria-labelledby="tab-document">
 			<div class="col-md-12">
 				{include file="gestion/documentList.tpl"}
+				{if $externalStorageEnabled == 1}
+				{include file="gestion/documentExternalAdd.tpl"}
+				{/if}
 			</div>
 		</div>
 		<div class="tab-pane fade" id="nav-booking" role="tabpanel" aria-labelledby="tab-booking">

@@ -31,6 +31,7 @@ switch ($t_module["param"]) {
     if (!isset($isDelete) && !isset($_REQUEST["is_action"])) {
       $_SESSION["searchSample"]->setParam($_REQUEST);
     }
+    $vue->set("sampleList", "moduleFrom");
     /**
      * Get the content of a recorded request
      */
@@ -175,7 +176,7 @@ switch ($t_module["param"]) {
     if ($data["multiple_type_id"] > 0) {
       include_once 'modules/classes/subsample.class.php';
       $subSample = new Subsample($bdd, $ObjetBDDParam);
-      $vue->set($subSample->getListFromParent($data["sample_id"], "subsampling_date desc"), "subsample");
+      $vue->set($subSample->getListFromSample($data["sample_id"]), "subsample");
     }
     /**
      * Get the list of borrowings
@@ -196,6 +197,8 @@ switch ($t_module["param"]) {
     include_once 'modules/classes/document.class.php';
     $document = new Document($bdd, $ObjetBDDParam);
     $vue->set($document->getListFromField("uid", $data["uid"]), "dataDoc");
+    $vue->set($document->getMaxUploadSize(), "maxUploadSize");
+    $vue->set($_SESSION["collections"][$data["collection_id"]]["external_storage_enabled"], "externalStorageEnabled");
     /**
      * Get the list of authorized extensions
      */
@@ -637,6 +640,7 @@ switch ($t_module["param"]) {
      */
     $errors = array(
       500 => "Internal Server Error",
+      400 => "Bad request",
       401 => "Unauthorized",
       520 => "Unknown error",
       404 => "Not Found"
@@ -690,7 +694,7 @@ switch ($t_module["param"]) {
           throw new SampleException("Not a public collection for $id", 401);
         }
         if (!$withTemplate) {
-          throw new SampleException("The name of the template to be used is not specified in the request");
+          throw new SampleException("The name of the template is not specified in the request", 400);
         }
       }
       /**
@@ -708,6 +712,9 @@ switch ($t_module["param"]) {
         "error_code" => $error_code,
         "error_message" => $errors[$error_code]
       );
+      if ($APPLI_modeDeveloppement) {
+        $data["error_content"] = $e->getMessage();
+      }
       $message->setSyslog($e->getMessage());
     } finally {
       $vue->setJson(json_encode($data));

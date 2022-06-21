@@ -20,9 +20,9 @@ class Sample extends ObjetBDD
    * @param array $param
    */
   private $sql = "select distinct on (s.uid) s.sample_id, s.uid,
-					s.collection_id, collection_name, s.sample_type_id, s.dbuid_origin,
+					s.collection_id, collection_name, no_localization, s.sample_type_id, s.dbuid_origin,
                     sample_type_name, s.sample_creation_date, s.sampling_date, s.metadata, s.expiration_date,
-                    s.campaign_id, campaign_name,
+                    s.campaign_id, campaign_name,camp.uuid as campaign_uuid,
                     s.parent_sample_id,
 					st.multiple_type_id, s.multiple_value, st.multiple_unit, mt.multiple_type_name,
           so.identifier,
@@ -56,6 +56,7 @@ class Sample extends ObjetBDD
           case when ro.referent_name is not null then ro.referent_firstname else cr.referent_firstname end as referent_firstname,
           case when ro.referent_name is not null then ro.academical_directory else cr.academical_directory end as academic_directory,
           case when ro.referent_name is not null then ro.academical_link else cr.academical_link end as academical_link,
+          case when ro.referent_name is not null then ro.referent_organization else cr.referent_organization end as referent_organization,
           borrowing_date, expected_return_date, borrower_id, borrower_name,
           vsq.multiple_value + vsq.subsample_more - vsq.subsample_less as subsample_quantity
 					from sample s
@@ -83,8 +84,8 @@ class Sample extends ObjetBDD
           left outer join referent cr on (p.referent_id = cr.referent_id)
           left outer join last_borrowing lb on (so.uid = lb.uid)
           left outer join borrower using (borrower_id)
-          left outer join campaign on (s.campaign_id = campaign.campaign_id)
-          left outer join campaign_regulation campreg on (campaign.campaign_id = campreg.campaign_id)
+          left outer join campaign camp on (s.campaign_id = camp.campaign_id)
+          left outer join campaign_regulation campreg on (camp.campaign_id = campreg.campaign_id)
           left outer join country sc on (s.country_id = sc.country_id)
           left outer join country csp on (sp.country_id = csp.country_id)
           left outer join country sco on (s.country_origin_id = sco.country_id)
@@ -196,12 +197,17 @@ class Sample extends ObjetBDD
    * @param [type] $identifier
    * @return void
    */
-  public function getIdFromIdentifier($identifier)
+  public function getIdFromIdentifier(string $identifier, int $collection_id = 0)
   {
     $sql = "select sample_id from sample
     join object using (uid)
     where lower(identifier) = lower(:identifier)";
-    $data = $this->lireParamAsPrepared($sql, array("identifier" => $identifier));
+    $data =  array("identifier" => $identifier);
+    if ($collection_id > 0) {
+      $sql .= " and collection_id = :collection_id";
+      $data["collection_id"] = $collection_id;
+    }
+    $data = $this->lireParamAsPrepared($sql, $data);
     return $data["sample_id"];
   }
 
@@ -320,6 +326,11 @@ class Sample extends ObjetBDD
   {
     $data = $this->lire($uid);
     if ($this->verifyCollection($data)) {
+      /**
+       * delete from subsample
+       */
+      $sql = "delete from subsample where sample_id = :sample_id";
+      $this->executeAsPrepared($sql, array("sample_id"=>$data["sample_id"]), true);
       /**
        * suppression de l'echantillon
        */

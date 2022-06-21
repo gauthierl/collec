@@ -102,6 +102,7 @@
 	<collectionChange action="modules/param/collection.php" param="change" droits="param" retourlogin="1" type="smarty" />
 	<collectionWrite action="modules/param/collection.php" param="write" droits="param" retourok="collectionList" retourko="collectionChange" modulebefore="collectionChange" />
 	<collectionDelete action="modules/param/collection.php" param="delete" droits="param" retourok="collectionList" retourko="collectionChange" modulebefore="collectionChange"/>
+	<collectionGet action="modules/param/collection.php" param="getAjax" droits="consult" type="ajax"/>
 
 	<regulationList action="modules/param/regulation.php" param="list" droits="consult" retourlogin="1" type="smarty" />
 	<regulationChange action="modules/param/regulation.php" param="change" droits="param" retourlogin="1" type="smarty" />
@@ -137,18 +138,20 @@
 	<sampleImportStage1 action="modules/gestion/sample.php" param="importStage1" droits="import,collection" retourlogin="1" type="smarty"/>
 	<sampleImportStage2 action="modules/gestion/sample.php" param="importStage2" droits="import,collection" type="smarty" retourko="sampleImportStage1" modulebefore="sampleImportStage1,sampleImportStage2"/>
 	<sampleImportStage3 action="modules/gestion/import.php" param="importExterneExec" droits="import,collection" type="smarty" retourok="sampleImportStage1" retourko="sampleImportStage1" modulebefore="sampleImportStage2"/>
-	<samplesDelete action="modules/gestion/sample.php" param="deleteMulti" modulebefore="sampleList,samplesDelete,samplesAssignReferent,containerDisplay,samplesSetTrashed,sampleAssignReferent,samplesExit,samplesEntry,samplesSetCountry,samplesSetCollection,samplesSetCampaign,samplesSetStatus,sampleDisplay" retourok="sampleList" retourko="sampleList" droits="collection"/>
-	<samplesAssignReferent action="modules/gestion/sample.php" param="referentAssignMulti" modulebefore="sampleList,samplesDelete,samplesAssignReferent,containerDisplay,samplesSetTrashed,sampleAssignReferent,samplesExit,samplesEntry,samplesSetCountry,samplesSetCollection,samplesSetCampaign,samplesSetStatus,sampleDisplay" droits="collection" retourok="sampleList" retourko="sampleList"/>
-	<samplesCreateEvent action="modules/gestion/sample.php" param="eventAssignMulti" modulebefore="sampleList,samplesDelete,samplesAssignReferent,containerDisplay,samplesSetTrashed,sampleAssignReferent,samplesExit,samplesEntry,samplesSetCountry,samplesSetCollection,samplesSetCampaign,samplesSetStatus,sampleDisplay" droits="collection" retourok="sampleList" retourko="sampleList"/>
-	<samplesLending action="modules/gestion/sample.php" param="lendingMulti" modulebefore="sampleList,samplesDelete,samplesAssignReferent,containerDisplay,samplesSetTrashed,sampleAssignReferent,samplesExit,samplesEntry,samplesSetCountry,samplesSetCollection,samplesSetCampaign,samplesSetStatus,sampleDisplay" droits="collection" retourok="sampleList" retourko="sampleList"/>
+
+	<switch action="modules/gestion/switch.php"/>
+	<samplesDelete action="modules/gestion/sample.php" param="deleteMulti" modulebefore="sampleList,samplesDelete,samplesAssignReferent,containerDisplay,samplesSetTrashed,sampleAssignReferent,samplesExit,samplesEntry,samplesSetCountry,samplesSetCollection,samplesSetCampaign,samplesSetStatus,sampleDisplay" retourok="switch" retourko="switch" droits="collection"/>
+	<samplesAssignReferent action="modules/gestion/sample.php" param="referentAssignMulti" modulebefore="sampleList,samplesDelete,samplesAssignReferent,containerDisplay,samplesSetTrashed,sampleAssignReferent,samplesExit,samplesEntry,samplesSetCountry,samplesSetCollection,samplesSetCampaign,samplesSetStatus,sampleDisplay" droits="collection" retourok="switch" retourko="switch"/>
+	<samplesCreateEvent action="modules/gestion/sample.php" param="eventAssignMulti" modulebefore="sampleList,samplesDelete,samplesAssignReferent,containerDisplay,samplesSetTrashed,sampleAssignReferent,samplesExit,samplesEntry,samplesSetCountry,samplesSetCollection,samplesSetCampaign,samplesSetStatus,sampleDisplay" droits="collection" retourok="switch" retourko="switch"/>
+	<samplesLending action="modules/gestion/sample.php" param="lendingMulti" modulebefore="sampleList,samplesDelete,samplesAssignReferent,containerDisplay,samplesSetTrashed,sampleAssignReferent,samplesExit,samplesEntry,samplesSetCountry,samplesSetCollection,samplesSetCampaign,samplesSetStatus,sampleDisplay" droits="collection" retourok="switch" retourko="switch"/>
 	<sampleDetail action="modules/gestion/sample.php" type="json" param="detail"/>
-	<samplesSetTrashed action="modules/gestion/object.php" param="setTrashed" droits="collection" retourok="sampleList" retourko="sampleList" modulebefore="sampleList,samplesDelete,samplesAssignReferent,containerDisplay,samplesSetTrashed,sampleAssignReferent,samplesExit,samplesEntry,samplesSetCountry,samplesSetCollection,samplesSetCampaign,samplesSetStatus,sampleDisplay"/>
-	<samplesExit action="modules/gestion/sample.php" param="exitMulti" modulebefore="sampleList,samplesDelete,samplesAssignReferent,containerDisplay,samplesSetTrashed,sampleAssignReferent,samplesExit,samplesEntry,samplesSetCountry,samplesSetCollection,samplesSetCampaign,samplesSetStatus,sampleDisplay" droits="collection" retourok="sampleList" retourko="sampleList"/>
-	<samplesEntry action="modules/gestion/sample.php" param="entryMulti" modulebefore="sampleList,samplesDelete,samplesAssignReferent,containerDisplay,samplesSetTrashed,sampleAssignReferent,samplesExit,samplesEntry,samplesSetCountry,samplesSetCollection,samplesSetCampaign,samplesSetStatus,sampleDisplay" droits="collection" retourok="sampleList" retourko="sampleList"/>
-	<samplesSetCountry action="modules/gestion/sample.php" param="setCountry" modulebefore="sampleList,samplesDelete,samplesAssignReferent,containerDisplay,samplesSetTrashed,sampleAssignReferent,samplesExit,samplesEntry,samplesSetCountry,samplesSetCollection,samplesSetCampaign,samplesSetStatus,sampleDisplay" droits="collection" retourok="sampleList" retourko="sampleList" />
-	<samplesSetCollection action="modules/gestion/sample.php" param="setCollection" modulebefore="sampleList,samplesDelete,samplesAssignReferent,containerDisplay,samplesSetTrashed,sampleAssignReferent,samplesExit,samplesEntry,samplesSetCountry,samplesSetCollection,samplesSetCampaign,samplesSetStatus,sampleDisplay" droits="collection" retourok="sampleList" retourko="sampleList" />
-	<samplesSetCampaign action="modules/gestion/sample.php" param="setCampaign" modulebefore="sampleList,samplesDelete,samplesAssignReferent,containerDisplay,samplesSetTrashed,sampleAssignReferent,samplesExit,samplesEntry,samplesSetCountry,samplesSetCollection,samplesSetCampaign,samplesSetStatus,sampleDisplay" droits="collection" retourok="sampleList" retourko="sampleList" />
-    <samplesSetStatus action="modules/gestion/sample.php" param="setStatus" modulebefore="sampleList,samplesDelete,samplesAssignReferent,containerDisplay,samplesSetTrashed,sampleAssignReferent,samplesExit,samplesEntry,samplesSetCountry,samplesSetCollection,samplesSetCampaign,samplesSetStatus,sampleDisplay" droits="collection" retourok="sampleList" retourko="sampleList" />
+	<samplesSetTrashed action="modules/gestion/object.php" param="setTrashed" droits="collection" retourok="switch" retourko="switch" modulebefore="sampleList,samplesDelete,samplesAssignReferent,containerDisplay,samplesSetTrashed,sampleAssignReferent,samplesExit,samplesEntry,samplesSetCountry,samplesSetCollection,samplesSetCampaign,samplesSetStatus,sampleDisplay"/>
+	<samplesExit action="modules/gestion/sample.php" param="exitMulti" modulebefore="sampleList,samplesDelete,samplesAssignReferent,containerDisplay,samplesSetTrashed,sampleAssignReferent,samplesExit,samplesEntry,samplesSetCountry,samplesSetCollection,samplesSetCampaign,samplesSetStatus,sampleDisplay" droits="collection" retourok="switch" retourko="switch"/>
+	<samplesEntry action="modules/gestion/sample.php" param="entryMulti" modulebefore="sampleList,samplesDelete,samplesAssignReferent,containerDisplay,samplesSetTrashed,sampleAssignReferent,samplesExit,samplesEntry,samplesSetCountry,samplesSetCollection,samplesSetCampaign,samplesSetStatus,sampleDisplay" droits="collection" retourok="switch" retourko="switch"/>
+	<samplesSetCountry action="modules/gestion/sample.php" param="setCountry" modulebefore="sampleList,samplesDelete,samplesAssignReferent,containerDisplay,samplesSetTrashed,sampleAssignReferent,samplesExit,samplesEntry,samplesSetCountry,samplesSetCollection,samplesSetCampaign,samplesSetStatus,sampleDisplay" droits="collection" retourok="switch" retourko="switch" />
+	<samplesSetCollection action="modules/gestion/sample.php" param="setCollection" modulebefore="sampleList,samplesDelete,samplesAssignReferent,containerDisplay,samplesSetTrashed,sampleAssignReferent,samplesExit,samplesEntry,samplesSetCountry,samplesSetCollection,samplesSetCampaign,samplesSetStatus,sampleDisplay" droits="collection" retourok="switch" retourko="switch" />
+	<samplesSetCampaign action="modules/gestion/sample.php" param="setCampaign" modulebefore="sampleList,samplesDelete,samplesAssignReferent,containerDisplay,samplesSetTrashed,sampleAssignReferent,samplesExit,samplesEntry,samplesSetCountry,samplesSetCollection,samplesSetCampaign,samplesSetStatus,sampleDisplay" droits="collection" retourok="switch" retourko="switch" />
+    <samplesSetStatus action="modules/gestion/sample.php" param="setStatus" modulebefore="sampleList,samplesDelete,samplesAssignReferent,containerDisplay,samplesSetTrashed,sampleAssignReferent,samplesExit,samplesEntry,samplesSetCountry,samplesSetCollection,samplesSetCampaign,samplesSetStatus,sampleDisplay" droits="collection" retourok="switch" retourko="switch" />
 
 	<movement droits="consult" type="smarty" />
 	<movementList droits="collection" type="smarty" action="modules/gestion/movement.php" param="list" retourlogin="1"/>
@@ -223,6 +226,9 @@
 	<documentGet action="modules/gestion/document.php" param="get" type="binaire" droits="consult" />
 	<documentGetSW action="modules/gestion/document.php" param="getSW" type="binaire" retourko="documentGetSWerror"/>
 	<documentGetSWerror action="modules/gestion/document.php" param="getSWerror" type="json" />
+	<documentExternalGetList action="modules/gestion/document.php" param="externalGetList" droits="gestion" type="json"/>
+	<documentExternalAdd action="modules/gestion/document.php" param="externalAdd" droits="gestion" retourok="sampleDisplay" retourko="sampleDisplay"/>
+	<documentGetExternal action="modules/gestion/document.php" param="getExternal" type="binaire" droits="gestion"/>
 
 	<identifierTypeList action="modules/param/identifierType.php" param="list" droits="consult" retourlogin="1" type="smarty" />
 	<identifierTypeChange action="modules/param/identifierType.php" param="change" droits="param" retourlogin="1" type="smarty" />
@@ -317,6 +323,16 @@
 	<exportDelete action="modules/export/export.php" param="delete" droits="collection" moduleBefore="exportChange" retourok="lotDisplay" retourko="exportChange" />
 	<exportExec action="modules/export/export.php" param="exec" droits="collection" retourok="lotDisplay" retourko="lotDisplay" type="binaire"/>
 
+	<!-- change request functions - add collections limits -->
+	<requestList action="modules/request/request.php" param="list" retourlogin="1" droits="gestion" type="smarty" />
+	<requestChange action="modules/request/request.php" param="change" droits="gestion" type="smarty" />
+	<requestWrite action="modules/request/request.php" param="write" droits="param" modulebefore="requestChange,requestCopy,requestExec,requestWriteExec" retourok="requestChange" retourko="requestChange" />
+	<requestDelete action="modules/request/request.php" param="delete" droits="param" modulebefore="requestChange,requestExec,requestWriteExec,requestExecList" retourok="requestList" retourko="requestChange" />
+	<requestExec action="modules/request/request.php" param="exec" droits="gestion" type="html" />
+	<requestExecList action="modules/request/request.php" param="execList" droits="gestion" type="html" />
+	<requestWriteExec action="modules/request/request.php" param="write" droits="param" modulebefore="requestChange,requestExec,requestWriteExec,requestExecList" retourok="requestExec" retourko="requestChange" />
+	<requestCopy action="modules/request/request.php" param="copy" droits="param" type="smarty" />
+
     <!-- API -->
     <apiv1sampleWrite action="modules/gestion/sampleWs.php" param="write" droits="gestion" type="json"/>
 
@@ -335,4 +351,10 @@
 		<swapi_en action="framework/utils/markdown.php" param="documentation/webservices/apiCallEn.md" type="smarty" retourko="default"/>
     <sampleWrite_fr action="framework/utils/markdown.php" param="documentation/webservices/sampleWriteFr.md" type="smarty" retourko="default"/>
 		<sampleWrite_en action="framework/utils/markdown.php" param="documentation/webservices/sampleWriteEn.md" type="smarty" retourko="default"/>
+		<exportbatch_fr action="framework/utils/markdown.php" param="documentation/import_export/batch_export_fr.md" type="smarty" retourko="default"/>
+		<exportbatch_en action="framework/utils/markdown.php" param="documentation/import_export/batch_export_en.md" type="smarty" retourko="default"/>
+		<document_external_fr action="framework/utils/markdown.php" param="documentation/document_external/document_external_fr.md" type="smarty" retourko="default"/>
+		<document_external_en action="framework/utils/markdown.php" param="documentation/document_external/document_external_fr.md" type="smarty" retourko="default"/>
+		<rights_general_fr action="framework/utils/markdown.php" param="documentation/rights/rights_general_fr.md" type="smarty" retourko="default"/>
+		<rights_general_en action="framework/utils/markdown.php" param="documentation/rights/rights_general_en.md" type="smarty" retourko="default"/>
 </navigation>

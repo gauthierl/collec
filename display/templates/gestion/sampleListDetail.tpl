@@ -7,6 +7,7 @@
 			"paging": false,
 			"searching": true,
 			"stateSave": true,
+			"stateDuration": 60 * 60 * 24 * 30,
 			"columnDefs" : [
 				{
 				"targets": [11,12,13,14,15,16,17,18],
@@ -23,12 +24,12 @@
 					text: 'csv',
 					filename: 'samples',
 					exportOptions: {
-						columns: [1,2,3,4,5,6,8,9,10,11,12,13,14,15,16,17]
+						columns: [1,2,3,4,5,6,7,9,10,11,12,13,14,15,16,17]
 					},
 					customize: function (csv) {
 						var split_csv = csv.split("\n");
 						//set headers
-						split_csv[0] = '"uid","identifier","other_identifiers","collection","type","status","parent","last_movement","place","referent","campaign","sampling_place","sampling_date","creation_date","expiration_date","available_quantity"';
+						split_csv[0] = '"uid","identifier","other_identifiers","collection","type","status","sample_parent","last_movement","place","referent","campaign","sampling_place","sampling_date","creation_date","expiration_date","available_quantity"';
 						csv = split_csv.join("\n");
             return csv;
 					}
@@ -37,12 +38,12 @@
 					extend: 'copy',
 					text: '{t}Copier{/t}',
 					exportOptions: {
-						columns: [1,2,3,4,5,6,8,9,10,11,12,13,14,15,16,17]
+						columns: [1,2,3,4,5,6,7,9,10,11,12,13,14,15,16,17]
 					},
 					customize: function (csv) {
 						var split_csv = csv.split("\n");
 						//set headers
-						split_csv[3] = 'uid\tidentifier\tother_identifiers\tcollection\ttype\tstatus\tparent\tlast_movement\tplace\treferent\tcampaign\tsampling_place\tsampling_date\tcreation_date\texpiration_date\tavailable_quantity';
+						split_csv[3] = 'uid\tidentifier\tother_identifiers\tcollection\ttype\tstatus\tsample_parent\tlast_movement\tplace\treferent\tcampaign\tsampling_place\tsampling_date\tcreation_date\texpiration_date\tavailable_quantity';
 						split_csv.shift();
 						split_csv.shift();
 						split_csv.shift();
@@ -52,6 +53,9 @@
 				}
 			]
 		} );
+		/**
+		 * select or unselect samples
+		 */
 		$( ".checkSampleSelect" ).change( function () {
 			var libelle = "{t}Tout cocher{/t}";
 			if ( this.checked ) {
@@ -62,7 +66,9 @@
 		} );
 
 		$( "#sampleSpinner" ).hide();
-
+		/**
+		 * Actions on the list, for export and print
+		 */
 		$( '#samplecsvfile' ).on( 'keypress click', function () {
 			$( this.form ).find( "input[name='module']" ).val( "sampleExportCSV" );
 			$( this.form ).prop( 'target', '_self' ).submit();
@@ -83,7 +89,6 @@
 		} );
 
 		$( "#checkedButtonSample" ).on( "keypress click", function ( event ) {
-
 			var action = $( "#checkedActionSample" ).val();
 			if ( action.length > 0 ) {
 				var conf = confirm( "{t}Attention : l'opération est définitive. Est-ce bien ce que vous voulez faire ?{/t}" );
@@ -98,7 +103,7 @@
 			}
 		} );
 		/**
-		 * Actions for the list of samples
+		 * Actions for the list of samples - bottom of the list
 		 */
 		var actions = {
 			"samplesAssignReferent": "referentid",
@@ -247,6 +252,9 @@
 			object.attr( "title", tooltipContent );
 			object.tooltip( "open" );
 		}
+		/**
+		 * Add the search on columns headers
+		 */
 		$( '#sampleList thead th' ).each( function () {
 			var title = $( this ).text();
 			var size = title.trim().length;
@@ -297,29 +305,29 @@
 						if ( i == 0 ) {
 							options += ' selected ';
 							$( "#container_id" ).val( data[ i ].container_id );
-							$( "#container_uid" ).val( data[ i ].uid );
+							$( "#container_uidChange" ).val( data[ i ].uid );
 						}
 						options += '>' + data[ i ].uid + " " + data[ i ].identifier + " (" + data[ i ].object_status_name + ")</option>";
 					}
-					$( "#containers" ).html( options );
+					$( "#containersSample" ).html( options );
 				}
 			} );
 		}
-		$( "#containers" ).change( function () {
-			var id = $( "#containers" ).val();
+		$( "#containersSample" ).change( function () {
+			var id = $( "#containersSample" ).val();
 			$( "#container_id" ).val( id );
-			var texte = $( "#containers option:selected" ).text();
+			var texte = $( "#containersSample option:selected" ).text();
 			var a_texte = texte.split( " " );
-			$( "#container_uid" ).val( a_texte[ 0 ] );
+			$( "#container_uidChange" ).val( a_texte[ 0 ] );
 		} );
-		$( "#container_uid" ).change( function () {
+		$( "#container_uidChange" ).change( function () {
 			var url = "index.php";
 			var uid = $( this ).val();
 			$.getJSON( url, { "module": "containerGetFromUid", "uid": uid }, function ( data ) {
 				if ( data.container_id ) {
 					var options = '<option value="' + data.container_id + '" selected>' + data.uid + " " + data.identifier + " (" + data.object_status_name + ")</option>";
 					$( "#container_id" ).val( data.container_id );
-					$( "#containers" ).html( options );
+					$( "#containersSample" ).html( options );
 				}
 			} );
 		} );
@@ -335,6 +343,8 @@
 {if $droits.gestion == 1}
 <form method="POST" id="sampleFormListPrint" action="index.php">
 	<input type="hidden" id="module" name="module" value="samplePrintLabel">
+	<input type="hidden" id="moduleFrom" name="moduleFrom" value="{$moduleFrom}">
+	<input type="hidden" id="containerUid" name="containerUid" value="{$containerUid}">
 	<div class="row">
 		<div class="center">
 			<label id="lsamplecheck" for="checkSample">{t}Tout cocher{/t}</label>
@@ -496,9 +506,7 @@
 				<option value="samplesCreateEvent">{t}Créer un événement{/t}</option>
 				<option value="samplesLending">{t}Prêter les échantillons{/t}</option>
 				<option value="samplesExit">{t}Sortir les échantillons{/t}</option>
-				{if $sampleSearch.collection_id > 0}
-				<option value="lotCreate">{t}Créer un lot d'export{/t}</option>
-				{/if}
+				<option value="lotCreate" {if $sampleSearch.collection_id == 0}disabled{/if}>{t}Créer un lot d'export{/t}</option>
 				<option value="samplesSetCountry">{t}Affecter un pays de collecte{/t}</option>
 				<option value="samplesSetCampaign">{t}Attacher à une campagne de prélèvement{/t}</option>
 				<option value="samplesSetStatus">{t}Modifier le statut{/t}</option>
@@ -589,9 +597,9 @@
 			<!-- create an entry movement -->
 			<div class="entry" hidden>
 				<div class="form-group ">
-					<label for="container_uid" class="control-label col-md-4"><span class="red">*</span> {t}UID du contenant :{/t}</label>
+					<label for="container_uidChange" class="control-label col-md-4"><span class="red">*</span> {t}UID du contenant :{/t}</label>
 					<div class="col-md-8">
-						<input id="container_uid" name="container_uid" value="" type="number" class="form-control">
+						<input id="container_uidChange" name="container_uid" value="" type="number" class="form-control">
 					</div>
 				</div>
 				<div class="form-group ">
@@ -608,7 +616,7 @@
 						<select id="container_type_id" name="container_type_id" class="form-control">
 							<option value=""></option>
 						</select>
-						<select id="containers" name="containers">
+						<select id="containersSample" name="containers" class="form-control">
 							<option value=""></option>
 						</select>
 					</div>
@@ -660,11 +668,11 @@
 					<div class="col-sm-8">
 						<select id="collection_id_change" name="collection_id_change" class="form-control">
 							<option value="" selected>{t}Choisissez...{/t}</option>
-							{section name=lst loop=$collections}
-							<option value="{$collections[lst].collection_id}">
-								{$collections[lst].collection_name}
+							{foreach $collections as $collection}
+							<option value="{$collection.collection_id}">
+								{$collection.collection_name}
 							</option>
-							{/section}
+							{/foreach}
 						</select>
 					</div>
 				</div>

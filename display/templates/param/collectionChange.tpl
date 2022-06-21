@@ -96,6 +96,43 @@
                         </div>
                   </div>
                   <div class="form-group">
+                        <label for="no_localization"  class="control-label col-md-4">{t}Collection sans gestion de la localisation des échantillons ?{/t}</label>
+                        <div class="col-md-8">
+                              <div class="radio">
+                                    <label>
+                                          <input type="radio" name="no_localization" id="no_localization1" value="1" {if $data.no_localization == "1"}checked{/if}>
+                                          {t}oui{/t}
+                                    </label>
+                                    <label>
+                                          <input type="radio" name="no_localization" id="no_localization0" value="0" {if $data.no_localization == 0}checked{/if}>
+                                          {t}non{/t}
+                                    </label>
+                              </div>
+                        </div>
+                  </div>
+                  <div class="form-group">
+                        <label for="external_storage_enabled"  class="control-label col-md-4">{t}Le stockage de documents attachés aux échantillons est-il possible hors base de données ?{/t}</label>
+                        <div class="col-md-8">
+                              <div class="radio">
+                                    <label>
+                                          <input type="radio" name="external_storage_enabled" id="external_storage_enabled1" value="1" {if $data.external_storage_enabled == "1"}checked{/if}>
+                                          {t}oui{/t}
+                                    </label>
+                                    <label>
+                                          <input type="radio" name="external_storage_enabled" id="external_storage_enabled0" value="0" {if $data.external_storage_enabled == 0}checked{/if}>
+                                          {t}non{/t}
+                                    </label>
+                              </div>
+                        </div>
+                  </div>
+                  <div class="form-group">
+                        <label for="external_storage_root"  class="control-label col-md-4"> {t}Chemin d'accès aux fichiers externes :{/t}</label>
+                        <div class="col-md-8">
+                              <input id="external_storage_root" type="text" class="form-control" name="external_storage_root" value="{$data.external_storage_root}" >
+                        </div>
+                  </div>
+
+                  <div class="form-group">
                         <label for="groupes"  class="control-label col-md-4">{t}Groupes :{/t}</label>
                         <div class="col-md-7">
                               {section name=lst loop=$groupes}
